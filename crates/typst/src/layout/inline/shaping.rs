@@ -810,6 +810,9 @@ fn shape_segment<'a>(
             let c = text[cluster..].chars().next().unwrap();
             let script = c.script();
             let x_advance = font.to_em(pos[i].x_advance);
+
+            
+
             ctx.glyphs.push(ShapedGlyph {
                 font: font.clone(),
                 glyph_id: info.glyph_id as u16,
@@ -930,18 +933,11 @@ fn shape_tofus(ctx: &mut ShapingContext, base: usize, text: &str, font: Font) {
 /// Apply tracking and spacing to the shaped glyphs.
 fn track_and_space(ctx: &mut ShapingContext) {
     let tracking = Em::from_length(TextElem::tracking_in(ctx.styles), ctx.size);
-    let spacing =
-        TextElem::spacing_in(ctx.styles).map(|abs| Em::from_length(abs, ctx.size));
-
     let mut glyphs = ctx.glyphs.iter_mut().peekable();
     while let Some(glyph) = glyphs.next() {
         // Make non-breaking space same width as normal space.
         if glyph.c == '\u{00A0}' {
             glyph.x_advance -= nbsp_delta(&glyph.font).unwrap_or_default();
-        }
-
-        if glyph.is_space() {
-            glyph.x_advance = spacing.relative_to(glyph.x_advance);
         }
 
         if glyphs
